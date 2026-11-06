@@ -1,5 +1,5 @@
-// 主服务入口。启动后对外提供一个端口，
-// 同时托管 API、前端静态资源与运行接口。
+// Main service entry point. Serves a single port after startup,
+// hosting the API, frontend static assets, and the run endpoint.
 package main
 
 import (
@@ -20,7 +20,7 @@ func main() {
 	flag.Parse()
 
 	srv, err := server.New(server.Options{
-		SandboxBackend: os.Getenv("SANDBOX_BACKEND"), // 空 = exec(默认)，docket = Docker 容器后端
+		SandboxBackend: os.Getenv("SANDBOX_BACKEND"), // empty = exec (default), docker = Docker container backend
 	})
 	if err != nil {
 		log.Fatalf("init server: %v", err)

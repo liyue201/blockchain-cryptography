@@ -1,4 +1,4 @@
-/* ===== 主题变量：浅色为默认，深色通过 [data-theme="dark"] 覆盖 ===== */
+/* ===== Theme variables: light is the default, dark overrides via [data-theme="dark"] ===== */
 :root {
   --bg: #f7f8fa;
   --panel: #ffffff;
@@ -45,14 +45,14 @@ body {
   min-width: 0;
 }
 
-/* 中部：正文 + 分隔 + 示例面板 */
+/* Middle: body + divider + example panel */
 .mid {
   flex: 1;
   display: flex;
   min-width: 0;
 }
 
-/* 目录 */
+/* Table of contents */
 .sidebar {
   flex: 0 0 260px;
   border-right: 1px solid var(--border);
@@ -151,7 +151,7 @@ body {
 }
 .chapter:hover { background: var(--hover); }
 .chapter.active { background: var(--accent); color: var(--on-accent); }
-/* 章节左侧的竖直引导线：体现“从属于篇”的树状层级 */
+/* Vertical guide line on the left of each chapter: expresses the tree-like hierarchy "belongs to a part" */
 .chapter::before {
   content: "";
   position: absolute;
@@ -165,7 +165,7 @@ body {
 .chapter:hover::before { background: var(--accent); opacity: 0.6; }
 .chapter.active::before { background: var(--on-accent); opacity: 0.9; }
 
-/* 正文 */
+/* Article body */
 .article {
   flex: 1;
   min-width: 0;
@@ -187,7 +187,7 @@ body {
 .article th, .article td { border: 1px solid var(--border); padding: 6px 12px; }
 .muted { color: var(--muted); }
 
-/* 分隔条：拖动调整正文与示例区宽度 */
+/* Divider: drag to adjust the width between the body and the example area */
 .divider {
   flex: 0 0 6px;
   cursor: col-resize;
@@ -196,7 +196,7 @@ body {
 }
 .divider:hover { background: var(--accent); }
 
-/* 运行面板 */
+/* Run panel */
 .playground {
   flex: 0 0 auto;
   display: flex;
@@ -206,7 +206,7 @@ body {
   background: var(--play-bg);
 }
 
-/* 收起时的展开入口（右侧纵向按钮） */
+/* Expand entry in the collapsed state (vertical button on the right) */
 .side-toggle {
   flex: 0 0 30px;
   border: none;
@@ -220,7 +220,7 @@ body {
 }
 .side-toggle:hover { background: var(--accent); color: var(--on-accent); }
 
-/* 工具栏里的收起按钮 */
+/* Collapse button in the toolbar */
 .icon-btn {
   background: transparent;
   border: none;
@@ -244,10 +244,10 @@ body {
 }
 .run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* 编辑器占满示例面板剩余高度（输出折叠时整块，展开时让出下半部分） */
+/* Editor fills the remaining height of the example panel (full block when the output is collapsed; yields the bottom half when expanded) */
 .editor-wrap { flex: 1; min-height: 0; }
 
-/* 输出区：默认折叠（仅保留头部一条），运行后自动展开 */
+/* Output area: collapsed by default (only the header row remains), auto-expands after running */
 .output {
   flex: 0 0 44%;
   display: flex;

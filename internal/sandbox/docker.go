@@ -10,10 +10,10 @@ import (
 	"time"
 )
 
-// dockerRunner 通过 Docker 在隔离容器中编译运行用户代码（生产加固路径）。
+// dockerRunner compiles and runs user code in an isolated container via Docker (production hardening path).
 type dockerRunner struct{}
 
-// Run 将代码挂载进一次性容器执行：--network none、内存/CPU 限额、去能力。
+// Run mounts the code into a disposable container: --network none, memory/CPU limits, dropped capabilities.
 func (d *dockerRunner) Run(code string, timeout time.Duration) (*Result, error) {
 	if len(code) > maxCodeLen {
 		return nil, errors.New("code too long")

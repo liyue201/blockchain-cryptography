@@ -1,5 +1,5 @@
-// Package service 负责加载内嵌教材（content + examples），
-// 解析章节元数据并对外提供章节列表与正文。
+// Package service loads the embedded content (content + examples),
+// parses chapter metadata, and exposes the chapter list and body.
 package service
 
 import (
@@ -12,8 +12,8 @@ import (
 	"strings"
 )
 
-// Chapter 是单个章节的对外结构。
-// 标题与正文均支持中英双语：en 为空时前端回退到 zh。
+// Chapter is the external structure of a single chapter.
+// Titles and bodies are bilingual: when en is empty, the frontend falls back to zh.
 type Chapter struct {
 	ID        string `json:"id"`
 	Part      int    `json:"part"`
@@ -21,19 +21,19 @@ type Chapter struct {
 	TitleZh   string `json:"title_zh"`
 	TitleEn   string `json:"title_en"`
 	Sort      int    `json:"sort"`
-	ContentZh string `json:"content_zh"` // Markdown 中文正文
-	ContentEn string `json:"content_en"` // Markdown 英文正文（可选）
-	Example   string `json:"example"`    // 示例 Go 源码
-	ExampleID string `json:"example_id"` // 示例代号（用于前端缓存/提示）
+	ContentZh string `json:"content_zh"` // Markdown body in Chinese
+	ContentEn string `json:"content_en"` // Markdown body in English (optional)
+	Example   string `json:"example"`    // example Go source code
+	ExampleID string `json:"example_id"` // example ID (used for frontend caching/hints)
 }
 
-// PartMeta 是单个篇（part）的中英标题。
+// PartMeta is the bilingual title of a single part.
 type PartMeta struct {
 	Zh string `json:"zh"`
 	En string `json:"en"`
 }
 
-// Meta 是整本书的中英书名、副标题与篇标题，来自 content/book.json。
+// Meta is the bilingual book title, subtitle, and part titles from content/book.json.
 type Meta struct {
 	TitleZh    string              `json:"title_zh"`
 	TitleEn    string              `json:"title_en"`
@@ -42,14 +42,14 @@ type Meta struct {
 	Parts      map[string]PartMeta `json:"parts"`
 }
 
-// Service 持有教材索引。
+// Service holds the content index.
 type Service struct {
 	meta     *Meta
 	chapters []*Chapter
 	byID     map[string]*Chapter
 }
 
-// New 从内嵌 FS 加载教材并建立索引。
+// New loads the content from the embedded FS and builds the index.
 func New(contentFS, examplesFS fs.FS) (*Service, error) {
 	s := &Service{byID: map[string]*Chapter{}}
 
@@ -72,7 +72,7 @@ func New(contentFS, examplesFS fs.FS) (*Service, error) {
 		if err != nil {
 			return fmt.Errorf("parse %s: %w", p, err)
 		}
-		// 英文正文由同目录的 <name>.en.md 提供（可选，缺省留空、前端回退中文）
+		// English body is provided by <name>.en.md in the same directory (optional; left empty and falls back to Chinese when missing)
 		if en, err := fs.ReadFile(contentFS, strings.TrimSuffix(p, ".md")+".en.md"); err == nil {
 			ch.ContentEn = stripFront(string(en))
 		}
@@ -98,23 +98,23 @@ func New(contentFS, examplesFS fs.FS) (*Service, error) {
 	return s, nil
 }
 
-// List 返回按 (part, sort) 排序的章节列表。
+// List returns the chapter list sorted by (part, sort).
 func (s *Service) List() []*Chapter { return s.chapters }
 
-// Get 按 ID 返回章节，不存在时 ok=false。
+// Get returns the chapter by ID; ok=false when it does not exist.
 func (s *Service) Get(id string) (*Chapter, bool) {
 	c, ok := s.byID[id]
 	return c, ok
 }
 
-// Meta 返回整本书的元信息（书名、副标题、篇标题）。
+// Meta returns the book metadata (title, subtitle, part titles).
 func (s *Service) Meta() *Meta { return s.meta }
 
-// loadMeta 从 content/book.json 读取书的元信息；文件缺失时使用默认元信息。
+// loadMeta reads the book metadata from content/book.json; uses defaults when the file is missing.
 func (s *Service) loadMeta(contentFS fs.FS) error {
 	data, err := fs.ReadFile(contentFS, "book.json")
 	if err != nil {
-		// book.json 不是必需文件，缺省时仍能运行（标题为空，由前端兜底）
+		// book.json is not required; it still runs without it (titles empty, handled by the frontend)
 		s.meta = &Meta{Parts: map[string]PartMeta{}}
 		return nil
 	}
@@ -126,8 +126,8 @@ func (s *Service) loadMeta(contentFS fs.FS) error {
 	return nil
 }
 
-// parseChapter 解析单个章节文件：最简 front matter + Markdown 正文。
-// front-matter 格式：
+// parseChapter parses a single chapter file: minimal front matter + Markdown body.
+// front-matter format:
 //
 //	---
 //	id: part-0-01
@@ -136,7 +136,7 @@ func (s *Service) loadMeta(contentFS fs.FS) error {
 //	sort: 1
 //	example: 01-what-is-hash
 //	---
-//	正文...
+//	body...
 func parseChapter(file, raw string) (*Chapter, error) {
 	ch := &Chapter{}
 	rest := raw
@@ -175,12 +175,12 @@ func parseChapter(file, raw string) (*Chapter, error) {
 	body := strings.TrimPrefix(rest, "\n")
 	ch.ContentZh = body
 
-	// 前端在列表页不需要正文，用 title 区分；这里保留全部。
+	// The list page does not need the body, only the title to distinguish entries; here we keep everything.
 	return ch, nil
 }
 
-// stripFront 去掉一段 markdown 最前面的 front matter，返回正文；
-// 无 front matter 时原样返回（英文正文文件可省略 front matter）。
+// stripFront removes the leading front matter from a markdown snippet and returns the body;
+// returns the input unchanged when there is no front matter (English body files may omit front matter).
 func stripFront(raw string) string {
 	if strings.HasPrefix(raw, "---\n") {
 		if end := strings.Index(raw, "\n---"); end > 0 {
@@ -190,7 +190,7 @@ func stripFront(raw string) string {
 	return strings.TrimPrefix(raw, "\n")
 }
 
-// loadExample 从 examplesFS 读取约定路径 examples/<id>/main.go。
+// loadExample reads the example Go code from examples/<id>/main.go in the examples FS.
 func loadExample(fsys fs.FS, id string) (string, error) {
 	data, err := fs.ReadFile(fsys, path.Join("examples", id, "main.go"))
 	if err != nil {

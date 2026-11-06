@@ -1,4 +1,4 @@
-// Package server 组装 HTTP 服务：路由、静态前端托管、限流中间件。
+// Package server assembles the HTTP service: routing, static frontend hosting, and rate-limit middleware.
 package server
 
 import (
@@ -12,20 +12,20 @@ import (
 	"blockchain-cryptography/internal/service"
 )
 
-// Options 服务配置。
+// Options holds service configuration.
 type Options struct {
-	// SandboxBackend 沙箱后端：空 = exec(默认，本地进程)，"docker" = Docker 容器。
+	// SandboxBackend sandbox backend: empty = exec (default, local process), "docker" = Docker container.
 	SandboxBackend string
 }
 
-// Server 聚合各业务组件并暴露路由。
+// Server aggregates the business components and exposes the routes.
 type Server struct {
 	srv   *service.Service
 	run   *handler.RunHandler
 	limit *sandbox.RateLimiter
 }
 
-// New 创建服务实例，加载内嵌教材并准备沙箱执行器。
+// New creates a service instance, loading the embedded content and preparing the sandbox executor.
 func New(opts Options) (*Server, error) {
 	svc, err := service.New(book.Content, book.Examples)
 	if err != nil {
@@ -34,11 +34,11 @@ func New(opts Options) (*Server, error) {
 	return &Server{
 		srv:   svc,
 		run:   handler.NewRunHandler(sandbox.New(opts.SandboxBackend)),
-		limit: sandbox.NewRateLimiter(30, 60), // 每个 IP 每分钟 30 次
+		limit: sandbox.NewRateLimiter(30, 60), // 30 requests per IP per minute
 	}, nil
 }
 
-// Router 返回 HTTP 处理器。
+// Router returns the HTTP handler.
 func (s *Server) Router() http.Handler {
 	mux := http.NewServeMux()
 	api := http.NewServeMux()
@@ -51,7 +51,7 @@ func (s *Server) Router() http.Handler {
 
 	mux.Handle("/api/", api)
 
-	// 前端静态资源（SPA），缺失时优雅降级
+	// Frontend static assets (SPA), gracefully degrades when missing
 	webFS, err := fs.Sub(book.Web, "web/dist")
 	if err != nil {
 		panic("web/dist not embedded: " + err.Error())

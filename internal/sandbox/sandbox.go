@@ -1,5 +1,5 @@
-// Package sandbox 负责把用户提交的 Go 代码编译并运行。
-// 默认使用执行器进程（exec，适合本地/内网演示），可选 Docker 容器后端加固。
+// Package sandbox compiles and runs user-submitted Go code.
+// It uses a local executor process (exec, suited for local/intranet demos), with an optional Docker container backend for hardening.
 package sandbox
 
 import (
@@ -13,15 +13,15 @@ import (
 	"time"
 )
 
-// 运行硬限制（服务端兜底，不信任前端参数）。
+// Hard runtime limits (server-side fallback; frontend params are not trusted).
 const (
-	maxTimeout = 5 * time.Second // 单次运行超时，达到即强杀
+	maxTimeout = 5 * time.Second // max timeout per run; force-kill when reached
 	buildLimit = 12 * time.Second
-	maxOutput  = 1 << 20 // 输出截断上限 1MB
-	maxCodeLen = 1 << 15 // 源码长度上限 32KB
+	maxOutput  = 1 << 20 // output truncation cap, 1MB
+	maxCodeLen = 1 << 15 // source length cap, 32KB
 )
 
-// Result 返回一次运行的输出与统计。
+// Result holds the output and stats of a single run.
 type Result struct {
 	Stdout    string `json:"stdout"`
 	Stderr    string `json:"stderr"`
@@ -29,12 +29,12 @@ type Result struct {
 	ElapsedMS int64  `json:"elapsed_ms"`
 }
 
-// Runner 抽象不同的沙箱后端。
+// Runner abstracts over the different sandbox backends.
 type Runner interface {
 	Run(code string, timeout time.Duration) (*Result, error)
 }
 
-// New 按后端名创建 Runner："docker" 走容器，否则走本地进程执行。
+// New creates a Runner by backend name: "docker" uses containers, otherwise local process execution.
 func New(backend string) Runner {
 	if strings.EqualFold(backend, "docker") {
 		return &dockerRunner{}
@@ -42,7 +42,7 @@ func New(backend string) Runner {
 	return &execRunner{}
 }
 
-// execRunner 本地进程执行：写入临时 main.go → go build → 限时运行。
+// execRunner executes locally: write a temp main.go → go build → run within the time limit.
 type execRunner struct{}
 
 func (e *execRunner) Run(code string, timeout time.Duration) (*Result, error) {
@@ -70,7 +70,7 @@ func (e *execRunner) Run(code string, timeout time.Duration) (*Result, error) {
 	build := exec.CommandContext(buildCtx, "go", "build", "-o", binPath, mainPath)
 	build.Dir = dir
 	if out, err := build.CombinedOutput(); err != nil {
-		return &Result{Stderr: trim(string(out)), ExitCode: 2}, nil // 编译错误
+		return &Result{Stderr: trim(string(out)), ExitCode: 2}, nil // compile error
 	}
 
 	start := time.Now()
@@ -91,14 +91,14 @@ func (e *execRunner) Run(code string, timeout time.Duration) (*Result, error) {
 		if errors.As(runErr, &ee) {
 			exitCode = ee.ExitCode()
 		} else if runCtx.Err() != nil {
-			exitCode = 124 // 超时
+			exitCode = 124 // timeout
 		}
 		res.ExitCode = exitCode
 	}
 	return res, nil
 }
 
-// trim 截断过大输出，避免拖垮内存。
+// trim truncates oversized output to avoid exhausting memory.
 func trim(s string) string {
 	if len(s) > maxOutput {
 		return s[:maxOutput] + "\n...[truncated]"

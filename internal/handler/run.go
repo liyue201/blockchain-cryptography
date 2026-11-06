@@ -1,4 +1,4 @@
-// Package handler 提供 HTTP 处理器。
+// Package handler provides HTTP handlers.
 package handler
 
 import (
@@ -9,23 +9,23 @@ import (
 	"blockchain-cryptography/internal/sandbox"
 )
 
-// RunRequest 运行接口入参。
+// RunRequest is the input of the run endpoint.
 type RunRequest struct {
 	Code      string `json:"code"`
-	TimeoutMS int64  `json:"timeout_ms"` // 可选，服务端有硬上限
+	TimeoutMS int64  `json:"timeout_ms"` // optional; the server enforces a hard cap
 }
 
-// RunHandler 处理 POST /api/v1/run。
+// RunHandler handles POST /api/v1/run.
 type RunHandler struct {
 	runner sandbox.Runner
 }
 
-// NewRunHandler 创建运行 handler。
+// NewRunHandler creates a run handler.
 func NewRunHandler(runner sandbox.Runner) *RunHandler {
 	return &RunHandler{runner: runner}
 }
 
-// HandleRun 编译并运行用户代码。
+// HandleRun compiles and runs the user's code.
 func (h *RunHandler) HandleRun(w http.ResponseWriter, r *http.Request) {
 	var req RunRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

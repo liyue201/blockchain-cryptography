@@ -4,17 +4,17 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { BookMeta, Chapter, RunResult, getChapter, getMeta, listChapters, runCode } from './api'
 
-// 当前支持的语言：中 / 英
+// Currently supported languages: Chinese / English
 type Lang = 'zh' | 'en'
 
-// 默认语言优先级：用户手动选择 > 浏览器语言 > 兜底 zh
+// Default language priority: user's manual choice > browser language > fallback zh
 function getInitialLang(): Lang {
   const saved = localStorage.getItem('lang')
   if (saved === 'zh' || saved === 'en') return saved
   return navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en'
 }
 
-// 界面文案（中英对照）
+// UI copy (Chinese-English mapping)
 const UI: Record<Lang, Record<string, string>> = {
   zh: {
     brand: '区块链密码学',
@@ -58,7 +58,7 @@ const UI: Record<Lang, Record<string, string>> = {
   },
 }
 
-// 根据书的元信息返回篇名（-1 = 前言）
+// Returns the part name from book metadata (-1 = preface)
 function partName(meta: BookMeta, part: number, lang: Lang): string {
   const d = meta.parts?.[String(part)]
   const name = d ? (lang === 'en' && d.en ? d.en : d.zh) : ''
@@ -67,7 +67,7 @@ function partName(meta: BookMeta, part: number, lang: Lang): string {
     : `${UI[lang].partPrefix}${part}${UI[lang].partSuffix}${name}`
 }
 
-// meta 尚未加载完成时的空占位，保证渲染不报错
+// Empty placeholder used before meta finishes loading, so rendering never fails
 const emptyMeta: BookMeta = { title_zh: '', title_en: '', subtitle_zh: '', subtitle_en: '', parts: {} }
 
 export default function App() {
@@ -79,23 +79,23 @@ export default function App() {
   const [result, setResult] = useState<RunResult | null>(null)
   const [running, setRunning] = useState(false)
 
-  // 示例面板默认展开，但占用空间小（宽度可通过分隔拖动调整）
+  // Example panel is expanded by default, but takes little space (width adjustable by dragging the divider)
   const [expanded, setExpanded] = useState(true)
   const [playPct, setPlayPct] = useState(40)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
   const [outputOpen, setOutputOpen] = useState(false)
 
-  // 篇分组折叠：默认只展开「前言」与当前篇（第 0 篇）
+  // Part group collapse: by default only the "preface" and the current part (part 0) are expanded
   const [openParts, setOpenParts] = useState<Set<number>>(() => new Set([-1, 0]))
 
   const t = UI[lang]
 
-  // 语言记忆到 localStorage
+  // Remember the language in localStorage
   useEffect(() => {
     localStorage.setItem('lang', lang)
   }, [lang])
 
-  // 主题同步到根元素 data-theme，触发 CSS 变量切换
+  // Sync the theme to the root data-theme attribute, triggering the CSS variable switch
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
@@ -125,7 +125,7 @@ export default function App() {
     setCurrent(ch)
     setCode(ch.example)
     setResult(null)
-    // 选中章节时，自动展开它所在的一篇
+    // When a chapter is selected, automatically expand its part
     setOpenParts((prev) => new Set(prev).add(ch.part))
   }
 
@@ -144,7 +144,7 @@ export default function App() {
     try {
       const res = await runCode(code)
       setResult(res)
-      setOutputOpen(true) // 运行完自动展开输出
+      setOutputOpen(true) // auto-expand the output after running
     } catch (e) {
       setResult({ stdout: '', stderr: String(e), exit_code: -1, elapsed_ms: 0 })
       setOutputOpen(true)
@@ -153,7 +153,7 @@ export default function App() {
     }
   }
 
-  // 拖动中间分隔条，调整正文与示例面板的宽度占比
+  // Drag the middle divider to adjust the width ratio between the body and example panel
   function onDividerDown(e: React.MouseEvent) {
     e.preventDefault()
     const mid = midRef.current
@@ -186,7 +186,7 @@ export default function App() {
     return [...map.entries()].sort((a, b) => a[0] - b[0])
   }, [chapters])
 
-  // 仅当章节配有示例代码时才显示「可运行示例」面板（前言等纯文本章节不显示）
+  // Only show the "run live example" panel when the chapter has example code (pure-text chapters like the preface hide it)
   const hasExample = !!current && current.example.trim().length > 0
 
   return (
@@ -305,7 +305,7 @@ export default function App() {
         )}
       </main>
 
-      {/* 收起状态下的展开入口（仅当章节有示例时） */}
+      {/* Expand entry in the collapsed state (only when the chapter has an example) */}
       {!expanded && hasExample && (
         <button className="side-toggle" onClick={() => setExpanded(true)} title={t.sideToggleTitle}>
           {t.sideToggle}
