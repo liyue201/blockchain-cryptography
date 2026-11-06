@@ -1,0 +1,16 @@
+{
+  "title_zh": "区块链密码学",
+  "title_en": "Blockchain Cryptography",
+  "subtitle_zh": "在线交互书",
+  "subtitle_en": "Interactive Book",
+  "parts": {
+    "-1": { "zh": "前言", "en": "Preface" },
+    "0": { "zh": "趣谈入门", "en": "Getting Started" },
+    "1": { "zh": "哈希：区块链的地基", "en": "Hashing: The Foundation" },
+    "2": { "zh": "对称加密", "en": "Symmetric Encryption" },
+    "3": { "zh": "数字签名", "en": "Digital Signatures" },
+    "4": { "zh": "私钥、地址与钱包", "en": "Private Keys, Addresses & Wallets" },
+    "5": { "zh": "密码学进阶", "en": "Advanced Cryptography" },
+    "6": { "zh": "应用收尾", "en": "Putting It Together" }
+  }
+}

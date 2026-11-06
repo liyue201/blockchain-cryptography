@@ -1,0 +1,15 @@
+# 部署：docker compose up -d --build
+# 单服务即可对外提供：前端静态 + 内容 + 运行沙箱，全部打在一个容器里。
+services:
+  bkcc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: bkcc:latest
+    container_name: bkcc-web
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    environment:
+      # exec=进程内沙箱（MVP，适合教学演示）；生产可改 docker（需额外配置数据卷与 Docker 套接字，谨慎）
+      SANDBOX_BACKEND: "exec"

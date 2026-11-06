@@ -1,0 +1,14 @@
+# 前端依赖与产物不进构建上下文（前端在 Dockerfile 内部构建）
+web/node_modules
+web/dist
+web/package-lock.json
+
+# 后端产物
+bin/
+
+# 版本控制/日志
+.git
+.gitignore
+*.log
+DESIGN.md
+README.md

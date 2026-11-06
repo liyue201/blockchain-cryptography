@@ -1,33 +1,23 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
+# Build artifacts
+node_modules/
+dist/
 
-# Test binary, built with `go test -c`
+# Go
 *.test
-
-# Code coverage profiles and other test artifacts
 *.out
-coverage.*
-!coverage.go
-*.coverprofile
-profile.cov
+bin/
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# 示例源码的编译产物（examples/<id>/ 下无扩展名的可执行文件）
+# 忽略所有二级文件，再仅放行源码/文档类扩展名
+examples/*/*
+!examples/*/*.go
+!examples/*/*.md
+!examples/*/*.json
 
-# Go workspace file
-go.work
-go.work.sum
+# Editors
+.DS_Store
+.idea/
+.vscode/
 
-# env file
-.env
-
-# Editor/IDE
-# .idea/
-# .vscode/
+# Misc
+*.log
