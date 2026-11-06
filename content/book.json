@@ -3,6 +3,7 @@
   "title_en": "Blockchain Cryptography",
   "subtitle_zh": "在线交互书",
   "subtitle_en": "Interactive Book",
+  "github": "https://github.com/liyue201/blockchain-cryptography",
   "parts": {
     "-1": { "zh": "前言", "en": "Preface" },
     "0": { "zh": "趣谈入门", "en": "Getting Started" },

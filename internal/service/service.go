@@ -39,6 +39,7 @@ type Meta struct {
 	TitleEn    string              `json:"title_en"`
 	SubtitleZh string              `json:"subtitle_zh"`
 	SubtitleEn string              `json:"subtitle_en"`
+	GitHub     string              `json:"github"` // optional source repository URL
 	Parts      map[string]PartMeta `json:"parts"`
 }
 
@@ -112,7 +113,7 @@ func (s *Service) Meta() *Meta { return s.meta }
 
 // loadMeta reads the book metadata from content/book.json; uses defaults when the file is missing.
 func (s *Service) loadMeta(contentFS fs.FS) error {
-	data, err := fs.ReadFile(contentFS, "book.json")
+	data, err := fs.ReadFile(contentFS, "content/book.json")
 	if err != nil {
 		// book.json is not required; it still runs without it (titles empty, handled by the frontend)
 		s.meta = &Meta{Parts: map[string]PartMeta{}}

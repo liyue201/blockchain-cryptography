@@ -94,6 +94,15 @@ body {
 .theme-btn:hover { background: var(--hover); }
 
 .lang-wrap { display: flex; gap: 4px; }
+.controls { display: flex; gap: 6px; align-items: center; }
+.github-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--text);
+}
+.github-link:hover { color: var(--accent); }
 .lang-btn {
   border: 1px solid var(--border);
   background: transparent;
@@ -172,6 +181,21 @@ body {
   overflow-y: auto;
   padding: 32px 40px;
   line-height: 1.8;
+}
+.article-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: -16px;
+  margin-bottom: 16px;
+}
+.article-topbar .lang-wrap { gap: 0; }
+.article-topbar .lang-select {
+  height: 30px;
+  font-size: 13px;
+  color: var(--text);
+  border-radius: 8px;
 }
 .article h1 { font-size: 26px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
 .article h2 { font-size: 20px; margin-top: 28px; }

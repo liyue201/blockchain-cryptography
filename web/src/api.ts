@@ -21,6 +21,7 @@ export interface BookMeta {
   title_en: string
   subtitle_zh: string
   subtitle_en: string
+  github?: string
   parts: Record<string, PartMeta>
 }
 
