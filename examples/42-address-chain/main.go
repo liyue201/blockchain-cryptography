@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
 	"fmt"
 	"math/big"
+	"strings"
 )
 
 // ---- hand-rolled secp256k1 point ops (see Part 3, lesson 04) ----
@@ -85,22 +87,69 @@ func hash160(b []byte) []byte {
 	return h2[:20]
 }
 
+// base58checkChecksum returns the 4-byte checksum added by Base58Check:
+// first 4 bytes of SHA256(SHA256(payload)), where payload = version + pubkey hash.
+func base58checkChecksum(payload []byte) []byte {
+	h := sha256.Sum256(payload)
+	h2 := sha256.Sum256(h[:])
+	return h2[:4]
+}
+
+// base58CheckValid decodes an address and returns whether its trailing checksum matches.
+func base58CheckValid(s string) bool {
+	lead := 0
+	for _, r := range s { // leading '1's encode leading zero bytes
+		if r != '1' {
+			break
+		}
+		lead++
+	}
+	x := new(big.Int)
+	for _, r := range s {
+		m := strings.IndexRune(b58, r)
+		if m < 0 {
+			return false
+		}
+		x.Mul(x, big.NewInt(58))
+		x.Add(x, big.NewInt(int64(m)))
+	}
+	raw := append(make([]byte, lead), x.Bytes()...)
+	if len(raw) < 5 {
+		return false
+	}
+	body, want := raw[:len(raw)-4], raw[len(raw)-4:]
+	return bytes.Equal(base58checkChecksum(body), want)
+}
+
 func main() {
 	d := make([]byte, 32)
 	rand.Read(d)                                                     // 1) private key
 	pub := scalarMult(new(big.Int).SetBytes(d))                      // 2) public key = d*G
 	comp := append([]byte{byte(2 + pub.y.Bit(0))}, pub.x.Bytes()...) // compressed pubkey 33B
 	h160 := hash160(comp)                                            // 3) public-key hash
-	cs := sha256Check(sha256Check(comp))                             // 4) double SHA-256 for checksum
-	payload := append(append([]byte{0x00}, h160...), cs[:4]...)
-	addr := base58(payload) // 5) Base58Check
+	payload := append([]byte{0x00}, h160...)                         // 4) version 0x00 + pubkey hash
+	checksum := base58checkChecksum(payload)                         // 4) checksum over "version+hash"
+	full := append(append([]byte{}, payload...), checksum...)        // version + hash + checksum
+	addr := base58(full)                                             // 5) Base58Check
 
-	fmt.Printf("1) Private key:      %x\n", d)
-	fmt.Printf("2) Public key (comp 33B): %x\n", comp)
-	fmt.Printf("3) Pubkey hash (20B):    %x\n", h160)
-	fmt.Printf("4) payload w/ checksum:  %x\n", payload)
-	fmt.Printf("5) Base58Check address:  %s\n", addr)
-	fmt.Println("\nThis completes the whole chain from a private key to a human-friendly address.")
+	fmt.Printf("1) Private key:              %x\n", d)
+	fmt.Printf("2) Public key (comp 33B):    %x\n", comp)
+	fmt.Printf("3) Pubkey hash (20B):        %x\n", h160)
+	fmt.Printf("4) payload = 0x00 + hash:    %x\n", payload)
+	fmt.Printf("   checksum (first 4B):      %x\n", checksum)
+	fmt.Printf("5) payload + checksum:       %x\n", full)
+	fmt.Printf("   Base58Check address:      %s\n", addr)
+
+	// A typo anywhere in the address is now caught by the trailing checksum.
+	bad := []byte(addr)
+	for i, c := range bad {
+		if c != '1' {
+			bad[i] = '2'
+			break
+		}
+	}
+	fmt.Printf("\nTypo test — tweak one character of %s\n", addr)
+	fmt.Printf("  tampered address: %s\n", bad)
+	fmt.Printf("  checksum valid?   %v\n", base58CheckValid(string(bad)))
+	fmt.Println("That is the point of Base58Check: the 4-byte checksum rejects typos before they ever hit the chain.")
 }
-
-func sha256Check(b []byte) []byte { h := sha256.Sum256(b); return h[:] }
